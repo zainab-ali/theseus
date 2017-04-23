@@ -1,3 +1,6 @@
+import xerial.sbt.Sonatype.autoImport.sonatypeProfileName
+import ReleaseTransformations._
+
 lazy val compilerSettings = Seq(
   scalacOptions ++= Seq(
     "-language:higherKinds",
@@ -21,8 +24,8 @@ lazy val commonResolvers = Seq(
 lazy val buildSettings = Seq(
   scalaOrganization := "org.typelevel",
   scalaVersion := "2.12.1",
-  name := "theseus",
-  version := "0.1.0-SNAPSHOT"
+  organization := "com.github.to-ithaca",
+  name := "theseus"
 )
 
 lazy val catsVersion = "0.9.0"
@@ -39,7 +42,37 @@ lazy val commonSettings = Seq(
   )
 ) ++ compilerSettings
 
+
+val publishSettings = Seq(
+  releaseCrossBuild := true,
+  releaseIgnoreUntrackedFiles := true,
+  sonatypeProfileName := "com.github.to-ithaca",
+  developers += Developer("zainab-ali", "Zainab Ali", "", url("http://github.com/zainab-ali")),
+  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  homepage := Some(url("https://github.com/to-ithaca/theseus")),
+  scmInfo := Some(ScmInfo(url("https://github.com/to-ithaca/theseus"),
+    "git@github.com:to-ithaca/theseus")),
+  credentials ++= (for {
+    username <- Option(System.getenv().get("SONATYPE_USERNAME"))
+    password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
+  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq,
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+    setNextVersion,
+    commitNextVersion,
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+    pushChanges)
+)
+
 lazy val root = (project in file(".")).settings(
   buildSettings,
-  commonSettings
+  commonSettings,
+  publishSettings
 )
