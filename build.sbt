@@ -23,7 +23,7 @@ lazy val commonResolvers = Seq(
 
 lazy val buildSettings = Seq(
   scalaOrganization := "org.typelevel",
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.12.0",
   organization := "com.github.to-ithaca",
   name := "theseus"
 )
